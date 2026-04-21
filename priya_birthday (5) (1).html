@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A little quiz for you 🩵</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue-light: #ddeeff;
+    --blue-mid: #5aa8e0;
+    --blue-deep: #1a5f8a;
+    --blue-dark: #0d3a57;
+    --soft-white: #f7f3ee;
+    --warm-white: #fffdf9;
+    --text-main: #1a2a35;
+    --text-muted: #6b8a9a;
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--soft-white);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-main);
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -40%;
+    right: -20%;
+    width: 70vw;
+    height: 70vw;
+    background: radial-gradient(circle, #c8e8ff55 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -30%;
+    left: -15%;
+    width: 55vw;
+    height: 55vw;
+    background: radial-gradient(circle, #b8d4f055 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* INTRO SCREEN */
+  .intro-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    animation: fadeUp 0.8s ease both;
+  }
+  .intro-icon {
+    font-size: 56px;
+    margin-bottom: 1.5rem;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .intro-title {
+    font-family: 'Lora', serif;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--blue-deep);
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+  }
+  .intro-sub {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    max-width: 300px;
+  }
+  .start-btn {
+    background: var(--blue-deep);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 0.9rem 2.5rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px #1a5f8a33;
+  }
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px #1a5f8a44; }
+  .start-btn:active { transform: scale(0.97); }
+
+  /* QUIZ SCREEN */
+  .quiz-screen { display: none; flex: 1; flex-direction: column; }
+  .quiz-screen.active { display: flex; }
+
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  .step-dots {
+    display: flex;
+    gap: 6px;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #c8dce8;
+    transition: background 0.3s, transform 0.3s;
+  }
+  .dot.active { background: var(--blue-mid); transform: scale(1.2); }
+  .dot.done { background: var(--blue-deep); }
+  .step-num {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  .q-card {
+    background: var(--warm-white);
+    border: 1px solid #d0e8f5;
+    border-radius: 20px;
+    padding: 1.75rem 1.5rem;
+    margin-bottom: 1.25rem;
+    animation: fadeUp 0.4s ease both;
+    box-shadow: 0 2px 16px #1a5f8a0d;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .q-emoji { font-size: 32px; margin-bottom: 0.75rem; }
+  .q-text {
+    font-family: 'Lora', serif;
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.65;
+    color: var(--text-main);
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1rem;
+    animation: fadeUp 0.5s 0.1s ease both;
+  }
+  .opt-btn {
+    background: var(--warm-white);
+    border: 1px solid #d0e8f5;
+    border-radius: 14px;
+    padding: 0.85rem 1.1rem;
+    text-align: left;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1.5;
+  }
+  .opt-btn:hover:not(:disabled) {
+    border-color: var(--blue-mid);
+    background: #edf6ff;
+    transform: translateX(4px);
+  }
+  .opt-btn.selected {
+    background: #ddeeff;
+    border-color: var(--blue-mid);
+    color: var(--blue-deep);
+    font-weight: 500;
+    transform: translateX(4px);
+  }
+  .opt-btn:disabled { cursor: default; }
+
+  .feedback {
+    background: #eaf4ff;
+    border-left: 3px solid var(--blue-mid);
+    border-radius: 0 12px 12px 0;
+    padding: 0.9rem 1.1rem;
+    font-size: 14px;
+    color: var(--blue-deep);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+    display: none;
+    animation: fadeUp 0.3s ease both;
+    font-style: italic;
+  }
+  .feedback.show { display: block; }
+
+  .next-btn {
+    width: 100%;
+    padding: 0.85rem;
+    background: var(--blue-deep);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    display: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 16px #1a5f8a22;
+  }
+  .next-btn.show { display: block; }
+  .next-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px #1a5f8a33; }
+
+  /* WISH SCREEN */
+  .wish-screen { display: none; flex-direction: column; align-items: center; padding-top: 1rem; }
+  .wish-screen.active { display: flex; animation: fadeUp 0.7s ease both; }
+
+  .wish-sparkles { font-size: 24px; letter-spacing: 8px; margin-bottom: 1.25rem; }
+
+  .wish-card {
+    background: var(--warm-white);
+    border: 1px solid #c8dff5;
+    border-radius: 24px;
+    padding: 2rem 1.75rem;
+    width: 100%;
+    box-shadow: 0 4px 30px #1a5f8a11;
+    position: relative;
+    overflow: hidden;
+  }
+  .wish-card::before {
+    content: '🩵';
+    position: absolute;
+    font-size: 120px;
+    right: -20px;
+    bottom: -20px;
+    opacity: 0.07;
+    pointer-events: none;
+  }
+  .wish-heading {
+    font-family: 'Lora', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--blue-deep);
+    margin-bottom: 1.25rem;
+    text-align: center;
+  }
+  .wish-body {
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 2;
+    color: var(--text-main);
+    white-space: pre-line;
+  }
+  .wish-body em {
+    color: var(--blue-deep);
+    font-style: italic;
+  }
+
+  .replay-btn {
+    margin-top: 1.5rem;
+    padding: 0.6rem 1.75rem;
+    background: transparent;
+    border: 1px solid #c0d8ec;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .replay-btn:hover { border-color: var(--blue-mid); color: var(--blue-deep); }
+
+  /* PERMISSION SCREEN */
+  .perm-screen { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; flex: 1; padding-top: 2rem; }
+  .perm-screen.active { display: flex; animation: fadeUp 0.6s ease both; }
+  .perm-icon { font-size: 48px; margin-bottom: 1.25rem; animation: float 3s ease-in-out infinite; }
+  .perm-title { font-family: 'Lora', serif; font-size: 20px; font-weight: 500; color: var(--blue-deep); line-height: 1.6; margin-bottom: 0.6rem; }
+  .perm-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 2rem; line-height: 1.7; }
+  .perm-btns { display: flex; gap: 12px; width: 100%; }
+  .perm-yes { flex: 1; padding: 0.85rem; background: var(--blue-deep); color: white; border: none; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 16px #1a5f8a22; }
+  .perm-yes:hover { transform: translateY(-2px); }
+  .perm-no { flex: 1; padding: 0.85rem; background: transparent; color: var(--text-muted); border: 1px solid #c0d8ec; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 15px; cursor: pointer; transition: all 0.2s; }
+  .perm-no:hover { border-color: var(--blue-mid); color: var(--blue-deep); }
+
+  /* DECLINED SCREEN */
+  .declined-screen { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; flex: 1; }
+  .declined-screen.active { display: flex; animation: fadeUp 0.5s ease both; }
+  .declined-icon { font-size: 40px; margin-bottom: 1rem; }
+  .declined-msg { font-family: 'Lora', serif; font-size: 18px; color: var(--blue-deep); line-height: 1.8; margin-bottom: 0.5rem; }
+  .declined-sub { font-size: 14px; color: var(--text-muted); }
+
+  /* VIDEO SCREEN */
+  .video-screen { display: none; flex-direction: column; align-items: center; padding-top: 1.5rem; }
+  .video-screen.active { display: flex; animation: fadeUp 0.6s ease both; }
+  .video-label { font-family: 'Lora', serif; font-size: 16px; color: var(--blue-deep); margin-bottom: 1.25rem; text-align: center; font-style: italic; }
+  .video-wrap { width: 100%; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 30px #1a5f8a22; border: 1px solid #c8dff5; background: #000; aspect-ratio: 9/16; max-height: 72vh; }
+  .video-wrap iframe { width: 100%; height: 100%; border: none; display: block; }
+
+  @media (max-width: 400px) {
+    .intro-title { font-size: 24px; }
+    .q-text { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- INTRO -->
+  <div class="intro-screen" id="introScreen">
+    <div class="intro-icon">🩵</div>
+    <h1 class="intro-title">A little quiz<br><em style="font-style:italic; color:#5aa8e0;">just for you</em></h1>
+    <p class="intro-sub">Answer honestly… something special is waiting at the end 🎂</p>
+    <button class="start-btn" onclick="startQuiz()">Let's go ✨</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="quiz-screen" id="quizScreen">
+    <div class="top-bar">
+      <div class="step-dots" id="stepDots"></div>
+      <div class="step-num" id="stepNum">1 / 6</div>
+    </div>
+    <div class="q-card">
+      <div class="q-emoji" id="qEmoji"></div>
+      <div class="q-text" id="qText"></div>
+    </div>
+    <div class="options" id="optDiv"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextQ()">Next 🩵</button>
+  </div>
+
+  <!-- WISH -->
+  <div class="wish-screen" id="wishScreen">
+    <div class="wish-sparkles">✨ 🩵 ✨</div>
+    <div class="wish-card">
+      <div class="wish-heading">Happy Birthday ma… 🩵</div>
+      <div class="wish-body">Nee en life la unexpected ah vandhu, ennoda life ah romba azhaga change pannita.
+
+Un birthday romba happya irundhirukum nu namburen…
+Nee epovume ippadiye sirichitu, santhosham ah irukanum.
+
+Even nee enna love panra illaya nu theriyala…
+Aana naan unakku epovume nalladhane nadakanum nu pray pannitu irupen ma.
+
+100 years illa… adha vida kooda neriya naal, full happiness oda life enjoy pannanum 💫
+
+Happy late birthday… 🩵</div>
+    </div>
+    <button class="start-btn" style="margin-top:1.5rem;width:100%;" onclick="showPerm()">Next 🩵</button>
+    <button class="replay-btn" onclick="restart()">&#8635; Again try pannு</button>
+  </div>
+
+  <!-- PERMISSION -->
+  <div class="perm-screen" id="permScreen">
+    <div class="perm-icon" id="permIcon">&#127909;</div>
+    <div class="perm-title" id="permTitle">Oru special video irukku…<br>paakuriva?</div>
+    <div class="perm-sub" id="permSub">Un permission irundha mattum kaattuven 🩵</div>
+    <div class="perm-btns">
+      <button class="perm-yes" id="permYesBtn" onclick="confirmStep()">Paakuren 🩵</button>
+      <button class="perm-no" id="permNoBtn" onclick="showDeclined()">Pakuriva illai</button>
+    </div>
+  </div>
+
+  <!-- DECLINED -->
+  <div class="declined-screen" id="declinedScreen">
+    <div style="font-size:40px;margin-bottom:1rem;">🩵</div>
+    <div class="declined-msg">It's okay ma…<br>Un decision respect pannuven.<br>Take care 🩵</div>
+    <div class="declined-sub">Un happiness dhaan en wish.</div>
+  </div>
+
+  <!-- VIDEO -->
+  <div class="video-screen" id="videoScreen">
+    <div class="video-label">Un kaaga… 🩵</div>
+    <div class="video-wrap">
+      <iframe src="https://drive.google.com/file/d/1kQngP_lmZlqJi6MONQChR0uyTgImjh9o/preview" allow="autoplay" allowfullscreen></iframe>
+    </div>
+  </div>
+
+<script>
+const qs = [
+  {
+    emoji: "📅",
+    q: "Naan unna first paatha date theriyuma?",
+    opts: ["June 4", "June 14", "July 4", "Theriyala"],
+    correct: 0,
+    yes_fb: "Ayyo theriyudhu! June 4 — antha day en life la special dhan 🩵",
+    no_fb: "June 4 da… antha day naan unna first paarthen. En memory la epovum irukum 🩵"
+  },
+  {
+    emoji: "💬",
+    q: "Naan unakku first message anupuna date?",
+    opts: ["Aug 14", "Aug 4", "Sep 1", "Theriyala"],
+    correct: 0,
+    yes_fb: "Yes! Aug 14 — athaan namma story thudangina day 🩵",
+    no_fb: "Aug 14 da… naan nervous ah first msg anupunen. Antha feeling epovum mara maaten 🩵"
+  },
+  {
+    emoji: "🥺",
+    q: "Naan unakku special dhana?",
+    opts: ["Yes", "No"],
+    correct: 0,
+    yes_fb: "Romba santhosham… nee enakku always special dhan ma 🩵",
+    no_fb: "It's okay… nee enakku special dhan, adhu madhrum enough 🩵"
+  },
+  {
+    emoji: "😢",
+    q: "Naan unna nariya azha vechi irukana?",
+    opts: ["Yes", "No"],
+    correct: 1,
+    yes_fb: "Sorry ma… unna oru naanum azha veikka villai. Manna ichu da 🩵",
+    no_fb: "Seri aachi! Nee happy ah irukkanu thaan always wish pannuven 🩵"
+  },
+  {
+    emoji: "🧐",
+    q: "Ennoda wish ku wait panniya — poi sollatha!",
+    opts: ["Yes, wait panninen", "No, theriyalaye"],
+    correct: 0,
+    yes_fb: "Seri aachi! Wait pannathukku thanks ma… un time valuable 🩵",
+    no_fb: "It's okay da. Late ah irundalum, un birthday special dhaan 🩵"
+  },
+  {
+    emoji: "💙",
+    q: "Do you love me… even 1%?",
+    opts: ["Yes", "No"],
+    correct: 0,
+    yes_fb: "Love you too ma… 🩵 Intha feeling words la sollamudiyadhu.",
+    no_fb: "It's okay da… naan unna love pannren, adhu epovum change aagadhu 🩵"
+  }
+];
+
+let cur = 0, answered = false;
+
+function startQuiz() {
+  document.getElementById('introScreen').style.display = 'none';
+  document.getElementById('quizScreen').className = 'quiz-screen active';
+  buildDots();
+  loadQ();
+}
+
+function buildDots() {
+  const div = document.getElementById('stepDots');
+  div.innerHTML = '';
+  qs.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.id = 'dot' + i;
+    div.appendChild(d);
+  });
+}
+
+function updateDots() {
+  qs.forEach((_, i) => {
+    const d = document.getElementById('dot' + i);
+    d.className = 'dot' + (i < cur ? ' done' : i === cur ? ' active' : '');
+  });
+}
+
+function loadQ() {
+  answered = false;
+  updateDots();
+  const q = qs[cur];
+  document.getElementById('stepNum').textContent = `${cur+1} / ${qs.length}`;
+  document.getElementById('qEmoji').textContent = q.emoji;
+  document.getElementById('qText').textContent = q.q;
+
+  const div = document.getElementById('optDiv');
+  div.innerHTML = '';
+  div.style.animation = 'none';
+  void div.offsetWidth;
+  div.style.animation = '';
+
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.onclick = () => pick(i, btn, q);
+    div.appendChild(btn);
+  });
+
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('nextBtn').className = 'next-btn';
+
+  const card = document.querySelector('.q-card');
+  card.style.animation = 'none';
+  void card.offsetWidth;
+  card.style.animation = 'fadeUp 0.4s ease both';
+}
+
+function pick(i, btn, q) {
+  if (answered) return;
+  answered = true;
+  document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+  btn.className = 'opt-btn selected';
+  const fb = document.getElementById('feedback');
+  fb.textContent = (i === q.correct) ? q.yes_fb : q.no_fb;
+  fb.className = 'feedback show';
+  const nb = document.getElementById('nextBtn');
+  nb.textContent = cur === qs.length - 1 ? 'See your wish 🩵' : 'Next 🩵';
+  nb.className = 'next-btn show';
+}
+
+function nextQ() {
+  cur++;
+  if (cur >= qs.length) showWish();
+  else loadQ();
+}
+
+function showWish() {
+  document.getElementById('quizScreen').className = 'quiz-screen';
+  document.getElementById('wishScreen').className = 'wish-screen active';
+}
+
+let confirmCount = 0;
+const confirmSteps = [
+  {
+    icon: '🎥',
+    title: 'Oru special video irukku…<br>paakuriva?',
+    sub: 'Un permission irundha mattum kaattuven 🩵',
+    yesBtn: 'Paakuren 🩵',
+    noBtn: 'Pakuriva illai'
+  },
+  {
+    icon: '🤔',
+    title: 'Sure ah paakuriva?<br>Romba special video da…',
+    sub: 'Confirm pannitu sollu 🩵',
+    yesBtn: 'Paakuren 🩵',
+    noBtn: 'Pakuriva illai'
+  },
+  {
+    icon: '🥺',
+    title: 'Last time — pakuriva? 🥺',
+    sub: 'Apuram regret pannidathe 😄',
+    yesBtn: 'Paakuren 🩵',
+    noBtn: 'Pakuriva illai'
+  }
+];
+
+function showPerm() {
+  confirmCount = 0;
+  document.getElementById('wishScreen').className = 'wish-screen';
+  document.getElementById('permScreen').className = 'perm-screen active';
+  updatePermScreen();
+}
+
+function updatePermScreen() {
+  const s = confirmSteps[confirmCount];
+  document.getElementById('permIcon').innerHTML = s.icon;
+  document.getElementById('permTitle').innerHTML = s.title;
+  document.getElementById('permSub').textContent = s.sub;
+  document.getElementById('permYesBtn').textContent = s.yesBtn;
+  document.getElementById('permNoBtn').textContent = s.noBtn;
+}
+
+function confirmStep() {
+  confirmCount++;
+  if (confirmCount >= confirmSteps.length) {
+    showVideo();
+  } else {
+    document.getElementById('permIcon').style.animation = 'none';
+    void document.getElementById('permIcon').offsetWidth;
+    document.getElementById('permIcon').style.animation = 'float 3s ease-in-out infinite';
+    updatePermScreen();
+  }
+}
+
+function showVideo() {
+  document.getElementById('permScreen').className = 'perm-screen';
+  document.getElementById('videoScreen').className = 'video-screen active';
+}
+
+function showDeclined() {
+  document.getElementById('permScreen').className = 'perm-screen';
+  document.getElementById('declinedScreen').className = 'declined-screen active';
+}
+
+function restart() {
+  cur = 0; answered = false;
+  document.getElementById('wishScreen').className = 'wish-screen';
+  document.getElementById('permScreen').className = 'perm-screen';
+  document.getElementById('videoScreen').className = 'video-screen';
+  document.getElementById('declinedScreen').className = 'declined-screen';
+  document.getElementById('quizScreen').className = 'quiz-screen active';
+  buildDots();
+  loadQ();
+}
+</script>
+</body>
+</html>
